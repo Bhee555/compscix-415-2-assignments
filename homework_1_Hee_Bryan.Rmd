@@ -8,6 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
 My Github repository for my assignments can be found at this URL: [https://github.com/Bhee555/compscix-415-2-assignments/blob/master/homework_1_Hee_Bryan.Rmd]
 
 ```{r load_packages, warning=FALSE, message=FALSE}
