@@ -33,8 +33,34 @@ unique(country_col)
 Question 1 - WorldCities
 There are 10 Variables and 23,018 observations included in the WorldCities MDSR dataset. Some of the variable names include name, code, population, regionCode, and countryRegion.
 
-Question 2 - Region Column
+Question 2 - Region Column Code =
 ```{r question_2}
 region_col <- WorldCities$region
 unique(region_col)
+```
+
+```{r tidy_way}
+country_col <- select(WorldCities, country)
+country_col <- WorldCities %>% select(country)
+```
+
+Question 3 - Unique Countries Code = 
+```{r question_3}
+WorldCities %>% select(country) %>% unique()
+```
+
+```{r plot_it}
+WorldCities %>% ggplot(aes(x = population)) +
+geom_histogram() +
+xlab('CityPopulation')
+```
+
+Question 4 - 1 More Histogram
+
+```{r question_4}
+WorldCities %>% ggplot(aes(x = latitude)) +
+geom_histogram() +
+xlab('Latitudes') +
+ylab('Number of Latitudes') +
+ggtitle('Question 4 Answer')
 ```
