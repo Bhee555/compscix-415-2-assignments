@@ -17,7 +17,6 @@ library(tidyverse)
 EXERCISE 3.2.4
 
 1. All i see is a blank canvas or axis-set. See code below:
-
 ```{r exercise_3.2.4.1}
 ggplot(data = mpg)
 ```
@@ -26,20 +25,32 @@ ggplot(data = mpg)
 
 3. The drv variable describes the drive type of the car. i.e. whether the car is front-wheel drive, rear-wheel drive, or 4-wheel drive
 
-4.
+4. See scatterplot of hwy vs. cyl below:
 ```{r exercise_3.2.4.4}
 ggplot(data = mpg) + geom_point(mapping = aes(x = cyl, y = hwy))
 ```
 
-5. The graph class vs. drv is not very useful because we are graphing discrete 1-to-1 categorical data as a scatter plot. It doesn't allow an easy visual understanding of how many classes belong to each drive type. 
+5. The graph class vs. drv is not very useful because we are graphing discrete 1-to-1 categorical data as a scatter plot. It doesn't allow an easy visual understanding of how many classes belong to each drive type.See graph below:
 ```{r exercise_3.2.4.5}
 ggplot(data = mpg) + geom_point(mapping = aes(x = drv, y = class))
 ```
 
+EXERCISE 3.3.1
 
+1. The following code does not plot the mpg dataset hwy vs. disp in the color blue because the code "color = "blue"" is included in the aes() function rather than outside aes() but still inside geom_point()
 ```{r exercises_3.3.1}
-
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color = "blue"))
 ```
+
+2. The categorical variables included in the dataset mpg, include: manufacturer, model, trans, drv, fl, and class. The continuous variables included are: displ, year, cyl, cty, and hwy
+
+3. 
+
+4.
+
+5. 
+
 
 ```{r exercises_3.5.1.4and5}
 
