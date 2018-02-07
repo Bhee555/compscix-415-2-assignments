@@ -14,9 +14,28 @@ The preview shows you a rendered HTML copy of the contents of the editor. Conseq
 library(tidyverse)
 ```
 
-```{r exercises_3.2.4}
+EXERCISE 3.2.4
+
+1. All i see is a blank canvas or axis-set. See code below:
+
+```{r exercise_3.2.4.1}
 ggplot(data = mpg)
 ```
+
+2. There are 234 rows and 11 columns in the mpg dataset
+
+3. The drv variable describes the drive type of the car. i.e. whether the car is front-wheel drive, rear-wheel drive, or 4-wheel drive
+
+4.
+```{r exercise_3.2.4.4}
+ggplot(data = mpg) + geom_point(mapping = aes(x = cyl, y = hwy))
+```
+
+5. The graph class vs. drv is not very useful because we are graphing discrete 1-to-1 categorical data as a scatter plot. It doesn't allow an easy visual understanding of how many classes belong to each drive type. 
+```{r exercise_3.2.4.5}
+ggplot(data = mpg) + geom_point(mapping = aes(x = drv, y = class))
+```
+
 
 ```{r exercises_3.3.1}
 
@@ -34,3 +53,4 @@ ggplot(data = mpg)
 
 ```
 
+What is a Data Scientist?
