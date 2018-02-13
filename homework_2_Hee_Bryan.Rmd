@@ -11,10 +11,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r load_packages, warning=FALSE, message=FALSE}
 library(tidyverse)
+data("mpg")
+glimpse(mpg)
 ```
 
 EXERCISE 3.2.4
-
+"
 1. All i see is a blank canvas or axis-set. See code below:
 ```{r exercise_3.2.4.1}
 ggplot(data = mpg)
@@ -44,20 +46,61 @@ ggplot(data = mpg) +
 
 2. The categorical variables included in the dataset mpg, include: manufacturer, model, trans, drv, fl, and class. The continuous variables included are: displ, year, cyl, cty, and hwy
 
-3. 
+3. A plot of displ vs. cty in blue color with a size of 5 is shown below. Mapping continuous variables allows for overlapping/same data points, whereas every point in a categorical datat set, when plotted, is discrete (i.e. no overlapping)
+```{r new_map}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = cty, y = displ), color = "blue", size = 5)
+```
+
+4. Adding another aes() changes the name of the axes but does not change the actual plotted data
+```{r new_map_new_aes}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = cty, y = displ), color = "blue", size = 5, alpha = 1/20) +
+  aes(x = model, y = displ)
+```
+
+5. The stroke aesthetic allows the user to modify the width of the border of plotted shapes. It only works for shapes that have a border.
+
+6. An error message occurs when you try to map an aesthetic other than a variable name.
+
+EXERCISE 3.5.1
+
+4. An advantage of using the aesthetic of faceting is that it is an easy way to visually understand the quantity of data in category of the plotted variable (in this case class). It is also useful in getting a more intimate understanding of how each category of the plotted variable (class) is distributed across the independent variable. However, it is not a great way of understanding how each category compares to the others (i.e. understanding the distribution of the entire plotted dataset). If the dataset is larger, it is a less effective visual tool to communicate the differences between the categories, if each category tends to have similar distributions as their respective sample sizes grow. However, it is much more useful if each category tends to have a unique distribution (such as hwy vs. displ). This is because the greater the size of the dataset, the "noisier" a plot gets, so disagregating the plotted data into the categories gives the viewer more granularity.
+
+5.
+```{r exercises_3.5.1.4and5}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_wrap(~ class, nrow = 2)
+```
+
+In facet_wrap, nrow defines the number of rows and ncol defines the number of columns of subplots to display. It allows you to break up the subplots into a more digestable display. I.e. if you were to graph the plot above with nrow = 1, you would display the seven categories in one row (which would be the same as plotting ncol = 7. 
+
+EXERCISE 3.6.1
+
+1.The following geoms are what i would use to plot different types of charts:
+    line chart = 
+    boxplot = 
+    histogram = 
+    area chart = 
+
+2.
+
+3.
 
 4.
 
-5. 
+5.
 
+6.
 
-```{r exercises_3.5.1.4and5}
-
-```
 
 ```{r exercises_3.6.1}
 
 ```
+
+
+EXERCISE 3.7.1
 
 ```{r exercises_3.7.1.2}
 
