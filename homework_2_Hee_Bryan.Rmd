@@ -1,6 +1,9 @@
 ---
 title: "COMPSCIX 415.2 Homework 2"
-output: pdf_document
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -153,3 +156,21 @@ EXERCISE 3.7.1
 2. geom_bar() makes a bar chart that uses the height of the bars in proportionality to the number of cases in each grouping. It is different from geom_col() in that geom_col() uses the values of the data as the height of the bars instead.
 
 What is a Data Scientist?
+
+Graph 1: The usual challenge in using a donut chart of not being able to fully convey the sizes of each categorical variable are mitigated by the use of called out percentages! However, since the data is ordinal, the use of a linear chart might have been more effective.
+
+Graph 2: I think this is an effective way of communicating where the lion's share of "best new source of data science talent" lies: students studying compuer science. However, if i were to replot this graph i would have made the order of the variables go in an ascending order (smallest on the left) rather than descending (smallest on the right) since we read left to right i think it would lead the reader a bit and garner more engagement in the graph.
+
+Graph 3: I like the use of decreasing opacity in this graph to hammer home the differences between categorical variables (yay alpha!). 
+
+Graph 4: The graph is trying to communicate that it is significantly more likely that data scientists have advanced degrees than BI professionals do. I personally think that this graph does a terrible job of doing this. The creator of the graph uses faceting which isolates each category of the categorical variable being plotted (highest level of schooling). However, it took me some time to catch on to the trend of both bins (BI and Data Scientist) as you move from left to right. In my opinion the creator could have overlayed a line graph for each "bin" with a point at the max of each bar and color coordinated it with the bars. That would link the different facet subplots together and draw trend lines. An alternative is to filter out some of the uninformative data. This could be done by only graphing the facet subplots: Masters/Professional Degree, and Doctoral Degree.
+
+Graph 5: I think this graph achieves its purpose in communicating that Business is overwhelmingly the major which BI professionals studied in college. The size of the large circle immediately shows scale.
+
+Graph 6:  Again, i like the addition of the percentage call outs on this donut chart. However, I was a bit confused on the descriptions for both of the dichotomous options. It didn't necessarily relate to new technology as the graph title mentioned but to the work that data scientists do.
+
+Graph 7: I think that the characteristics of data scientists are appropriately represented. There is a bit of disconnect for me between the dichotomous options lists and the ordinal bar at the bottom of the graphic. I am not quite sure how this could be overcome though.
+
+Graph 8: Again faceting the graph loses the visual of seeing trends quickly. I found this graphic to be extremely confusing since the percentages of the variable distribtions did not add up to 100%. It is unclear on what the actual data is (time spent, team's reliance on DS/BI, project involvement breakdown, etc.). I would have to know more about the data to be able to better display the graphics but i think that using an area chart might be a good option for this dataset.
+
+Graph 9: Again providing percentages that do not add up to 100% is extremely confusing for me. I also think that a donut plot with called out percentages (assuming they add up to 100%) or a shape size graph (same as graph 2, sorry not sure on the terminology) would be much better to relate the relative involvements of the data science team members.
