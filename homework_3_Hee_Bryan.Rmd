@@ -1,0 +1,43 @@
+---
+title: "COMPSCIX 415.2 Homework 3"
+author: "Bryan Hee"
+date: "February 13, 2018"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load_packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(nycflights13)
+```
+
+## Section 3.8.1
+### Question 1
+The problem with the plot is that there is a quite a bit of overlapping data. To better communicate the information, you could use position = "jitter" to remove the overplotting effects.
+```{r question_3.8.1.1}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) + 
+  geom_point(position = "jitter") + 
+  geom_count()
+```
+
+### Question 2
+The parameters that control the amount of jittering within the geom_jitter() geom are width and height
+
+### Question 3
+The geom geom_count counts the number of observations at each location and then displays that information as a count to point area. The geom geom_jitter on the otherhand changes the observations' values slightly to better see the disagregated sample graphically. geom_count is more useful if you are trying to understand exactly how much overplotting is occuring and where the highest densities of overplotting occur, whereas geom_jitter is more useful in seeing the representational data sample.
+
+
+### Question 4
+
+
+
+## Section 3.9.1
+
+## Section 4.4
+
+## Section 5.2.4
+
+## Section 5.4.1
+
