@@ -1,0 +1,55 @@
+---
+title: "COMPSCIX 415.2 Homework 4"
+author: "Bryan Hee"
+date: "February 20, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+```
+
+## Section 5.6.7
+### Question 2
+
+### Question 4
+
+### Question 5
+
+### Question 6
+
+## Section 10.5
+### Question 1
+
+### Question 2
+
+### Question 3
+
+### Question 6
+
+## Section 12.3.3
+### Question 2
+
+### Question 3
+
+### Question 4
+
+## Section 12.4.3
+### Question 1
+
+### Question 2
+
+## Additional Questions
+```{r Baby Names}
+holder_name <- 'C:/Users/BryanHee/OneDrive - stok LLC/Intro to Data Science/baby_names.txt'
+baby_name_data <- read_delim(file = holder_name, "|")
+glimpse(baby_name_data)
+write_rds(baby_name_data, 'C:/Users/BryanHee/OneDrive - stok LLC/Intro to Data Science/baby_names.rds')
+read_rds('C:/Users/BryanHee/OneDrive - stok LLC/Intro to Data Science/baby_names.rds') %>%
+  glimpse()
+```
