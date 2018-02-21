@@ -26,18 +26,101 @@ ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
 The parameters that control the amount of jittering within the geom_jitter() geom are width and height
 
 ### Question 3
-The geom geom_count counts the number of observations at each location and then displays that information as a count to point area. The geom geom_jitter on the otherhand changes the observations' values slightly to better see the disagregated sample graphically. geom_count is more useful if you are trying to understand exactly how much overplotting is occuring and where the highest densities of overplotting occur, whereas geom_jitter is more useful in seeing the representational data sample.
-
+geom_count counts the number of observations at each location and then displays that information as a count to point area. The geom geom_jitter on the otherhand changes the observations' values slightly to better see the disagregated sample graphically. geom_count is more useful if you are trying to understand exactly how much overplotting is occuring and where the highest densities of overplotting occur, whereas geom_jitter is more useful in seeing the representational data sample.
 
 ### Question 4
-
-
+The default position for the geom boxplot is dodge.
+```{r 3.8.1.4}
+ggplot(data = mpg, mapping = aes(x = trans, y = displ)) +
+  geom_boxplot()
+```
 
 ## Section 3.9.1
+###Question 2
+The function labs allows you to modify the axis, legend, and plot labels. The functions xlab (x label defining function), ylab (y label defining function), and ggtitle (title defining function) are all a part of labs.
+
+###Question 4
+The data provided in this exercise displays a linear relationship between highway and city mpg ratings for cars in the mpg data set. As the highway efficiency ratings go up, so too do the city mpg ratings. geom_abline() allows you to superimpose a linear reference line to the plot. By doing so, it allows the viewer of the graph to quickly see the linear relationship of the graphed data.
 
 ## Section 4.4
+###Question 1
+The code provided does not work because the obect name is mispelled when recalled. Instead of an "i" there is a "1"
+
+###Question 2
+```{r 4.4.2}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy))
+#> testing
+filter(mpg, cyl == 8)
+filter(diamonds, carat > 3)
+```
+
+Pressing "alt+shift+k" gives you the keyboard shortcut quick reference. You can also get to this reference sheet by going to the Toolbar -> Help -> Keyboard Shortcuts Help
 
 ## Section 5.2.4
+###Question 1
+```{r 5.2.4.1.1}
+df <- flights
+question_1.1 <- filter(df, arr_delay >= 120)
+question_1.2 <- filter(df, dest %in% c("IAH", "HOU"))
+question_1.3 <- filter(df, carrier %in% c("UA", "AA", "DL"))
+question_1.4 <- filter(df, month %in% c(7, 8, 9))
+question_1.5 <- filter(df, dep_delay <= 0 & arr_delay > 120)
+question_1.6 <- filter(df, dep_delay >= 60 & arr_delay <= 30)
+question_1.7 <- filter(df, dep_time <= 2400 & dep_time >= 600)
+```
+
+###Question 2
+The dplyr filtering helper function between() returns a dataframe with variable values between the two specified values passed to it. On question 1.7 above it would have simplified the code by removing the necessity of having to type "dep_time" twice. I could have also used it on question 1.4.
+```{r 5.2.4.1.2}
+question_1.4_simplified <- filter (df, between(month, 7, 9))
+question_1.7_simplified <- filter (df, between(dep_time, 600, 2400))
+```
+
+###Question 3
+There are 8255 flights which have missing departure times in the tibble. In this filter of the tibble, there are also missing values for the following variables: dep_delay, arr_time, arr_delay, air_time, and in some cases tailnum. It is likely that these data entries represent cancelled flights.
+```{r 5.2.4.1.3}
+question_3 <- filter(df, is.na(dep_time))
+```
+
+###Question 4
+None of the following representing missing statements (is.na == TRUE) because in general it seems that R treats NA as if it were a blank. However, the NA*0 does not follow this general rule.
+
+```{r 5.2.4.1.4}
+sub_question_one <- is.na(NA^0)
+sub_question_two <- is.na(NA | TRUE)
+sub_question_three <- is.na(FALSE & NA)
+
+```
 
 ## Section 5.4.1
+###Question 1
+The following 3 objects represent the same dataframe created in three different ways, containing the variables: dep_time, dep_delay, arr_time, arr_delay. The commented portion of the code is another way that did not end up working. 
+```{r 5.4.1.1}
+question_5.4.1.3.1.1 <- select(flights, dep_time, dep_delay, arr_time, arr_delay)
+question_5.4.1.3.1.2 <- c("dep_time", "dep_delay", "arr_time", "arr_delay")
+select(flights, one_of(question_5.4.1.3.1.2))
+question_5.4.1.3.1.3 <- select(flights, dep_time:arr_delay, -(sched_dep_time), -(sched_arr_time))
+#> select(flights, starts_with("arr") & starts_with("dep"))
+```
+
+###Question 2
+Nothing happens if you accidentally add a variable name multiple times other than selecting it once. I.e. the resultant dataframe does not have multiple columns of the same variable.
+```{r 5.4.1.2}
+question_5.4.1.2 <- select(flights, dep_time, dep_time)
+```
+
+###Question 3
+The one_of() helper function returns variables in a character vector. if you create a vector of the variables you want, you can then use one_of() with select() to create a dataframe. 
+```{r 5.4.1.3}
+vars <- c("year", "month", "day", "dep_delay", "arr_delay")
+question_5.4.1.3 <- select(flights, one_of(vars))
+```
+
+###Question 4
+The following code does surprise me because R is case sensitive. However, all of the select helper functions default to ignoring case. You can change this default by including FALSE as the second input to the helper function. 
+```{r 5.4.1.4}
+select(flights, contains("TIME"))
+```
+
 
