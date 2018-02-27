@@ -10,41 +10,162 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
+library(dplyr)
 library(tidyverse)
 library(nycflights13)
 ```
 
 ## Section 5.6.7
 ### Question 2
+The following R chunks represents both the original code and the updated code that gives the same tibble without using "count"
+
+```{r Question_5.6.7.2.1}
+# original code chunk
+    not_cancelled <- flights %>% 
+      filter(!is.na(dep_delay), !is.na(arr_delay))
+    not_cancelled %>% count(dest)
+
+# updated code chunk 
+    not_cancelled <- flights %>% 
+      filter(!is.na(dep_delay), !is.na(arr_delay))
+    not_cancelled %>% 
+    group_by(dest) %>%
+    summarise(
+      n = n()
+    )
+```
+
+```{r Question_5.6.7.2.2}
+# original code chunk
+    not_cancelled <- flights %>% 
+      filter(!is.na(dep_delay), !is.na(arr_delay))
+    not_cancelled %>% count(tailnum, wt = distance)
+
+# updated code chunk
+    not_cancelled <- flights %>% 
+      filter(!is.na(dep_delay), !is.na(arr_delay))
+    not_cancelled %>%
+    group_by(tailnum) %>%
+    summarise(
+      n = sum(distance)
+    )
+  
+```
 
 ### Question 4
+Based off of the graph below, there doesn't appear to be any correlation between day of the month and number of cancelled flights. There also shouldn't be a correlation between cancelled flights per day and average delay time because if the flight is cancelled the delay by default is infite or NA.
+
+```{r Question_5.6.7.4}
+cancelled <- flights %>%
+  filter(is.na(dep_time), is.na(arr_time))
+cancelled %>% 
+  group_by(day) %>%
+  summarise(
+    missed_flights = n()
+  ) %>%
+  
+ggplot(mapping = aes(x = day, y = missed_flights)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  labs(y ="missed flights", title = "Missed Flights per Day") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
 
 ### Question 5
+Based off of the average delay time, the worst carrier is F9, or Frontier Airlines. However, based off of the total delay times (in the flights data set) per airline, EV, or ExpressJet Airlines, Inc. is the worst. 
+
+```{r Question_5.6.5}
+carriers <- flights %>%
+  group_by(carrier) %>%
+  summarise(
+    delay = (mean(dep_delay, na.rm = TRUE)),
+    total_flights = n(),
+    total_delay = delay * total_flights
+  )
+
+ggplot(data = carriers, mapping = aes(x = carrier, y = delay)) +
+  geom_point()
+
+```
 
 ### Question 6
+The sort function, when applied to count() should arrange the variable in question from smallest count to largest. You could use it to rank different attributes. I.e. on the previous question you could sort carriers based on the number of delays or number of cancelled flights to get an understanding of what is the worst and what is the best carrier.
 
 ## Section 10.5
 ### Question 1
+You can tell if an object is a tibble by running it in the console and seeing what the result is. If it is a tibble, the first line will be "# A tibble: " and then define the tibble size. It will also display only the first few columns' names, variable type, and will only print the first 10 rows in the object. It will then tell you the number of additional rows and the other variable columns (by name) included in the tibble.
+
+A data frame on the otherhand, won't display the metadata (variable type, number of rows, number of variables) and will try to output the entire dataframe until it reaches a max.print limit.
 
 ### Question 2
+See the comments in the R chunk below for the differences between the code run on a data frame versus tibble. Also, with data frames using "[" will return either a data frame or a vector, however on a tibble it will only return a tibble. Hence why, you get three tibbles when you run the code on a tibble, but only two data frames (because one result is a vector)
+
+```{r}
+df <- tibble(abc = 1, xyz = "a")
+
+#because there is no column named "x" running this subset on the tibble will not work and will generate an error, however running it on a data.frame will search for the most similarly named column and return that 
+df$x
+
+#this prints the full column of the tibble, but only the first observation of the dataframe
+df[, "xyz"]
+
+#this works the same on both a tibble and data.frame
+df[, c("abc", "xyz")]
+```
 
 ### Question 3
+If you have a name of a variable stored in an object, you can extract it using the following code: "tibble_name$variable_name" or by using "tibble_name[[variable_name]]" or "tibble_name[[position]]"   
 
 ### Question 6
+The option that controls the number of additional column names printed at the footer of a tibble is driven by "options(tibble.width = )" which will allow the user to define the number of columns to print. The remaining columns will be printed in the footer.
 
 ## Section 12.3.3
 ### Question 2
+The following code failed because instead of passing gather() the names of the columns that represent values as a string, it passed them as values. 
+```{r}
+table4a %>% 
+  gather('1999', '2000', key = "year", value = "cases")
+```
 
 ### Question 3
+Spreading the provided tibble fails because there are two entries for Pillip Wood's age. 
+
+#You could add a new column to fix the problem BY::::
+
+```{r}
+people <- tribble(
+  ~name,             ~key,    ~value,
+  #-----------------|--------|------
+  "Phillip Woods",   "age",       45,
+  "Phillip Woods",   "height",   186,
+  "Phillip Woods",   "age",       50,
+  "Jessica Cordero", "age",       37,
+  "Jessica Cordero", "height",   156
+) %>%
+  
+  spread(key = "key", value = "value")
+```
+
 
 ### Question 4
+Gather is needed to tidy the tibble because "male" and "female" are values not variables. See below for the gathered tibble:
+```{r}
+preg <- tribble(
+  ~pregnant, ~male, ~female,
+  "yes",     NA,    10,
+  "no",      20,    12
+) %>%
+
+gather("male", "female", key = "gender", value = "number of pregnant")
+```
+
 
 ## Section 12.4.3
 ### Question 1
 
 ### Question 2
 
-## Additional Questions
+## Additional Question
 ```{r Baby Names}
 holder_name <- 'C:/Users/BryanHee/OneDrive - stok LLC/Intro to Data Science/baby_names.txt'
 baby_name_data <- read_delim(file = holder_name, "|")
