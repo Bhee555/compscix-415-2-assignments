@@ -2,7 +2,10 @@
 title: "Homework 5/Midterm"
 author: "Bryan Hee"
 date: "March 3, 2018"
-output: html_document
+output:
+  html_document:
+    toc: true
+    number_sections: TRUE
 ---
 
 ```{r setup, include=FALSE}
@@ -13,3 +16,126 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 ```
 
+#The Tidyverse Packages
+##Packages
+The following list represents tasks which can be accomplished using the tidyverse library and the corresponding package that is associated with each task:
+
+a. Plotting - ggplot2()
+
+b. Data munging/wrangling - dplyr()
+
+c. Reshaping (spreading and gathering) data - tidyr()
+
+d. Importing/exporting data - readr()
+
+##Functions
+The following are 2 functions that we've used from each package listed above:
+
+a. ggplot2() - geom_point(), coord_flip()
+
+b. dplyr() - arrange(), mutate()
+
+c. tidyr() - spread(), gather()
+
+d. readr() - read_delim(), write_rds()
+
+
+#R Basics
+##Code Edit 1
+The exclamation mark from the original object name was removed 
+```{r}
+My_data.name___is.too00ooLong <- c(1,2,3)
+```
+
+##Code Edit 2
+The "it" was missing a closing parenthesis. The c defining the struct was capitalized.
+
+```{r}
+my_string <- c('has', 'an', 'error', 'in', 'it')
+```
+
+##Vector Storage
+The entire vector is stored as characters rather than numerics (this differed from my expectation that only 3 and 4 would be stored as characters).
+
+```{r}
+my_vector <- c(1,2, '3', '4',5)
+my_vector
+is.numeric(my_vector[1])
+```
+
+
+#Data Import/Export
+##Rail Trail Import
+Import Rail Trail.txt:
+```{r import, message=FALSE}
+holder <- 'C:/Users/BryanHee/OneDrive - stok LLC/Intro to Data Science/HW Assignments/Assignment 5/rail_trail.txt'
+rail_trail <- read_delim(file = holder, '|')
+rm(holder)
+glimpse(rail_trail)
+```
+
+##Rail Trail Export
+Export Rail Trail.rds:
+```{r export}
+write_rds(rail_trail, path = 'C:/Users/BryanHee/OneDrive - stok LLC/Intro to Data Science/HW Assignments/Assignment 5/rail_trail.rds')
+read_rds('C:/Users/BryanHee/OneDrive - stok LLC/Intro to Data Science/HW Assignments/Assignment 5/rail_trail.rds') %>%
+glimpse()
+```
+
+
+#Visualization
+##Mrs. President Graph Critique
+##FIX
+```{r}
+ggplot(diamonds) +
+  geom_boxplot(mapping = aes(cut, carat, position = color)) +
+  labs(x = 'CUT OF DIAMOND', y = 'CARAT OF DIAMOND') +
+  coord_flip()
+```
+
+
+##Question 3
+```{r}
+ggplot(diamonds, mapping = aes(cut, carat, fill = color)) +
+  geom_boxplot() +
+  labs(x = 'CUT OF DIAMOND', y = 'CARAT OF DIAMOND') +
+  coord_flip()
+```
+
+#Data Munging and Wrangling
+##Table2
+No table2 is not currently tidy because the type column includes two variables.
+```{r}
+spread(table2, key = 'type', value = 'count')
+```
+
+##Price per Carat
+```{r Price per Carat, echo=FALSE}
+diamonds <- mutate(diamonds, 
+       price_per_carat = price / carat)
+```
+
+
+##FIX
+```{r}
+pricy_small_diamonds <- diamonds %>%
+  filter(price>10000 & carat < 1.5) #%>%
+#summarise(count(cut))
+
+  
+```
+
+
+#EDA - Exploratory Data Analysis
+##Question 1
+```{r}
+texas_housing <- txhousing
+head(texas_housing)
+tail(texas_housing)
+```
+
+##Question 2
+##Question 3
+##Question 4
+##Question 5
+##Question 6
