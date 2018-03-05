@@ -8,6 +8,8 @@ output:
     number_sections: TRUE
 ---
 
+Github Repository: https://github.com/Bhee555/compscix-415-2-assignments
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -85,10 +87,19 @@ glimpse()
 
 #Visualization
 ##Mrs. President Graph Critique
+The first critique of the graph provided is that on each of the age bins, the data is provided in percentage of respondents, however the overall data doesn't add up to 100%. I would assume that the remainder percentages of survey respondents replied with answers other than Yes/No, however, I believe it is the job of the data scientist to remove the need for any and all assumptions, such as this.
+
+The second issue i have with the graphic is that there is no indication of the sample sizes for each of the respondent bins.
+
+A third feature that i feel this graphic failed on, are the arbitrary color choices made for the men and women respondent bins. All of the age groups were black, yet genders get two colors? It took me a second to interpret the data because of this.
+
 ##FIX
 ```{r}
-ggplot(diamonds) +
-  geom_boxplot(mapping = aes(cut, carat, position = color)) +
+test <- filter(diamonds, color == "D")
+
+ggplot(diamonds,mapping = aes(cut, carat)) +
+  geom_boxplot() +
+  geom_boxplot() +
   labs(x = 'CUT OF DIAMOND', y = 'CARAT OF DIAMOND') +
   coord_flip()
 ```
@@ -116,26 +127,103 @@ diamonds <- mutate(diamonds,
 ```
 
 
-##FIX
+##Pricy and Small Diamonds
+The following data represents the number of diamonds, grouped by cut, that cost more than $10,000 and are smaller than 1.5 carats. For the most part, the distribution makes sense to me (see the plot below). This is because as the quality of cut goes up, you would also expect the price of the same size diamond to go up. However it is interesting to me that premium diamonds actually have a smaller proportion than Very Good diamonds do. I would be wary of the fair and good numbers since the overall sample sizes included in the diamonds dataset for these two cuts are much smaller than the other cuts.
+
 ```{r}
 pricy_small_diamonds <- diamonds %>%
-  filter(price>10000 & carat < 1.5) #%>%
-#summarise(count(cut))
+  group_by(cut) %>%
+  summarise(pricy_and_small = sum(price > 10000 & carat <1.5),
+            total = n()) %>%
+  mutate(proportion = pricy_and_small / total)
+pricy_small_diamonds
+```
 
-  
+```{r}
+ggplot(pricy_small_diamonds, mapping = aes(x= cut, y = proportion)) +
+  geom_point() +
+  labs(title = "Proportion of Small but Expensive Diamonds")
 ```
 
 
 #EDA - Exploratory Data Analysis
-##Question 1
+##Texas Housing Sales Dataset Time Period
+The data extends from January 2000 to July 2015
 ```{r}
-texas_housing <- txhousing
-head(texas_housing)
-tail(texas_housing)
+texas_housing <- txhousing %>%
+arrange(date)
+head(texas_housing, 1)
+tail(texas_housing, 1)
 ```
 
-##Question 2
-##Question 3
-##Question 4
-##Question 5
-##Question 6
+
+##Number of Texas Cities in Dataset
+There are 46 cities represented in the data set.
+```{r}
+texas_housing %>%
+summarise(n_distinct(city))
+```
+
+##Highest Texas Housing Sales
+The highest sales, 8945, in the dataset occured in Houston in July 2015. This was the last month of sales data in the dataset.
+
+```{r}
+texas_housing %>%
+  arrange(desc(sales)) %>%
+  head(1)
+```
+
+
+##Texas Housing Sales Efficiency
+I would expect the number of sales to go up as the number of listings go up. However, judging by the sales_efficiency metric defined below, as well as the scatterplot that is not the case. There is no visible trend in the plot between the number of listings and the number of sales.
+
+```{r}
+texas_housing %>%
+  group_by(date) %>%
+  summarise(sales = sum(sales, na.rm = TRUE),
+            listings = sum(listings, na.rm = TRUE)) %>%
+  mutate(sales_efficiency = sales / listings) -> texas_housing_sales
+texas_housing_sales
+```
+
+```{r}
+  ggplot(texas_housing_sales, mapping = aes(x = listings, y = sales)) +
+  geom_point() +
+  labs(title = "Texas Housing Sales from Jan 2000 through July 2015", x = "Number of Listings", y = "Number of Sales")
+```
+
+
+##Missing Sales
+There are 568 rows of missing data for sales within the dataset. The "testing" tibble below lists the sum of missing sales entries for each city (sorted in descending order by number of missing entries) as well as the proportion of missing to overall sales entries by city.
+```{r}
+texas_housing %>%
+  group_by(city) %>%
+  summarise(missing = sum(is.na(sales)),
+            total = n()) %>%
+  mutate(proportion = missing / total) -> missing_sales
+missing_sales %>%
+arrange(desc(missing))
+summarise(missing_sales, sum(missing))
+```
+
+
+##FIX
+The median house prices for cities changed based off of the sales greater than 500 filter, when there were months with sales less than 500. However, for cities with sales greater than 500 for all 187 months (Austin, Dallas, Houston, and San Antonio) the median home prices stayed the same (obviously).
+
+The cities that i would want to look into further are Collin County and Fort Worth because they have the highest and lowest median house prices in the filtered data. I'd also want to look into Corpus Christi because there are only 5 years in which there were more than 500 sales.
+
+I would filter out cities / months with less than 500 sales because what we are trying to gauge is the average housing price for the city over a ~15 year period of data. Although median is a fairly robust metric for looking at housing prices, if there are only a few housing sales in any given city / month, there may be specific events that would skew the data. However, with more than 500 sales, it is safe to assume that the sample size is large enough to provide a fair representation of the housing market for that specific city / month.
+
+
+```{r}
+texas_housing %>%
+  group_by(city) %>%
+  summarise(
+    all_median = median(median, na.rm = TRUE), 
+    all_months = n(),
+    filtered_median = median(median[sales > 500], na.rm = TRUE),
+    filtered_months = sum(sales > 500, na.rm = TRUE)) %>%
+  arrange(desc(filtered_median))
+```
+
+
