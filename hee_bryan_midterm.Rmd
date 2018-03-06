@@ -93,19 +93,22 @@ The second issue i have with the graphic is that there is no indication of the s
 
 A third feature that i feel this graphic failed on, are the arbitrary color choices made for the men and women respondent bins. All of the age groups were black, yet genders get two colors? It took me a second to interpret the data because of this.
 
-##FIX
+##Reproduced Plot
+Here is the reproduced plot from the diamonds dataset.
 ```{r}
 test <- filter(diamonds, color == "D")
 
-ggplot(diamonds,mapping = aes(cut, carat)) +
-  geom_boxplot() +
-  geom_boxplot() +
+ggplot(diamonds,mapping = aes(cut, carat, fill = color)) +
+  geom_boxplot(position = "identity") +
   labs(x = 'CUT OF DIAMOND', y = 'CARAT OF DIAMOND') +
   coord_flip()
+#out of all the questions, this took me the longest :), should have known position = "identity"
 ```
 
 
-##Question 3
+##More Useful Plot
+I think the following is a more useful plot because I can now visually see each color's carat size distribution while still being grouped by cut. By getting rid of position = "identity" the geom boxplot automatically separates each color.
+
 ```{r}
 ggplot(diamonds, mapping = aes(cut, carat, fill = color)) +
   geom_boxplot() +
@@ -121,7 +124,7 @@ spread(table2, key = 'type', value = 'count')
 ```
 
 ##Price per Carat
-```{r Price per Carat, echo=FALSE}
+```{r Price per Carat}
 diamonds <- mutate(diamonds, 
        price_per_carat = price / carat)
 ```
@@ -142,7 +145,7 @@ pricy_small_diamonds
 ```{r}
 ggplot(pricy_small_diamonds, mapping = aes(x= cut, y = proportion)) +
   geom_point() +
-  labs(title = "Proportion of Small but Expensive Diamonds")
+  labs(title = "Proportion of Small but Expensive Diamonds \nto overall diamonds in dataset")
 ```
 
 
@@ -175,7 +178,7 @@ texas_housing %>%
 
 
 ##Texas Housing Sales Efficiency
-I would expect the number of sales to go up as the number of listings go up. However, judging by the sales_efficiency metric defined below, as well as the scatterplot that is not the case. There is no visible trend in the plot between the number of listings and the number of sales.
+I would expect the number of sales to go up as the number of listings go up. However, judging by the sales_efficiency metric defined below, as well as the scatterplot, that is not the case. There is no visible trend in the plot between the number of listings and the number of sales.
 
 ```{r}
 texas_housing %>%
@@ -207,23 +210,25 @@ summarise(missing_sales, sum(missing))
 ```
 
 
-##FIX
-The median house prices for cities changed based off of the sales greater than 500 filter, when there were months with sales less than 500. However, for cities with sales greater than 500 for all 187 months (Austin, Dallas, Houston, and San Antonio) the median home prices stayed the same (obviously).
+##Median Home Prices in Months w/ Sales > 500
+The median house prices are different based on city. As the plot displays below some cities have drastically large ranges, while others have small ranges. Corpus Christi for instance, only has 5 months of data within the filtered dataset. Because of this, it makes more sense that range of data is the smallest for this city. Fort Bend, and Collin County have the largest ranges within their respective median home sale price data. I am most surprised that Collin County has the highest median house sale price among the dataset because i would have though higher density cities such as Houston or Austin would be higher.
 
-The cities that i would want to look into further are Collin County and Fort Worth because they have the highest and lowest median house prices in the filtered data. I'd also want to look into Corpus Christi because there are only 5 years in which there were more than 500 sales.
+The cities that i would want to look into further are Collin County and Fort Worth because they have the highest and lowest median house prices in the filtered data. I'd also want to look into Corpus Christi because there are only 5 months in which there were more than 500 sales.
 
 I would filter out cities / months with less than 500 sales because what we are trying to gauge is the average housing price for the city over a ~15 year period of data. Although median is a fairly robust metric for looking at housing prices, if there are only a few housing sales in any given city / month, there may be specific events that would skew the data. However, with more than 500 sales, it is safe to assume that the sample size is large enough to provide a fair representation of the housing market for that specific city / month.
 
-
 ```{r}
-texas_housing %>%
-  group_by(city) %>%
-  summarise(
-    all_median = median(median, na.rm = TRUE), 
-    all_months = n(),
-    filtered_median = median(median[sales > 500], na.rm = TRUE),
-    filtered_months = sum(sales > 500, na.rm = TRUE)) %>%
-  arrange(desc(filtered_median))
+texas_housing2 <- texas_housing
+names(texas_housing2)[6]<-"med"
+texas_housing2 %>%
+  filter(sales > 500) %>%
+  group_by(city) -> tex_hou_fil 
+summarise(tex_hou_fil, median = median(med), max = max(med), min = min(med), range = (max(med) - min(med)), count = n()) %>%
+  arrange(desc(range))
+  ggplot(tex_hou_fil, mapping = aes(x = reorder(city, med, median), y = med)) +
+  geom_boxplot() +
+  coord_flip() +
+  labs(title = "Median Home Prices Between 2000 and 2015 \n(months w/ sales > 500)", x = "City", y = "Median Home Price") +
+  theme(plot.title = element_text(hjust = 0.5))
 ```
-
 
