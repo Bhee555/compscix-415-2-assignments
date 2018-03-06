@@ -4,8 +4,10 @@ author: "Bryan Hee"
 date: "March 3, 2018"
 output:
   html_document:
-    toc: true
-    number_sections: TRUE
+    number_sections: yes
+    toc: yes
+  pdf_document:
+    toc: yes
 ---
 
 Github Repository: https://github.com/Bhee555/compscix-415-2-assignments
@@ -96,8 +98,6 @@ A third feature that i feel this graphic failed on, are the arbitrary color choi
 ##Reproduced Plot
 Here is the reproduced plot from the diamonds dataset.
 ```{r}
-test <- filter(diamonds, color == "D")
-
 ggplot(diamonds,mapping = aes(cut, carat, fill = color)) +
   geom_boxplot(position = "identity") +
   labs(x = 'CUT OF DIAMOND', y = 'CARAT OF DIAMOND') +

@@ -259,9 +259,7 @@ glimpse()</code></pre>
 <div id="reproduced-plot" class="section level2">
 <h2><span class="header-section-number">4.2</span> Reproduced Plot</h2>
 <p>Here is the reproduced plot from the diamonds dataset.</p>
-<pre class="r"><code>test &lt;- filter(diamonds, color == &quot;D&quot;)
-
-ggplot(diamonds,mapping = aes(cut, carat, fill = color)) +
+<pre class="r"><code>ggplot(diamonds,mapping = aes(cut, carat, fill = color)) +
   geom_boxplot(position = &quot;identity&quot;) +
   labs(x = 'CUT OF DIAMOND', y = 'CARAT OF DIAMOND') +
   coord_flip()</code></pre>
