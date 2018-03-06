@@ -1,0 +1,52 @@
+---
+title: "Class 5 Work"
+author: "Bryan Hee"
+date: "February 27, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+ggplot(data = diamonds, mapping = aes(x = y)) +
+  geom_histogram(binwidth = 0.5) +
+  coord_cartesian(ylim = c(0, 50))
+```
+
+```{r}
+diamonds %>% arrange(desc(y))
+```
+
+```{r}
+ggplot(diamonds, mapping = aes(x = reorder(cut, price, FUN = median), y = price)) + 
+  geom_boxplot() +
+  coord_flip() +
+  labs(x = "CUT", y = "PRICE")
+```
+
+```{r}
+ggplot(faithful, mapping = aes(x = waiting, y = eruptions)) +
+  geom_point()
+```
+
+```{r}
+diamonds %>% 
+  price(carat, cut) %>% 
+  ggplot(mapping = aes(x = carat, y = cut)) +
+  geom_tile(mapping = aes(fill = price)) +
+  geom_text(aes(label = price), color = 'white')
+```
+
+```{r}
+texas_housing <- txhousing
+texas_housing %>%
+  group_by(city) %>%
+  summarise(
+    all_median = median(median, na.rm = TRUE), 
+    all_months = n(),
+    filtered_median = median(median[sales > 500], na.rm = TRUE),
+    filtered_months = sum(sales > 500, na.rm = TRUE)) %>%
+  arrange(desc(filtered_median))
+```
