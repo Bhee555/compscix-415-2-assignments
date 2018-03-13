@@ -2,14 +2,185 @@
 title: "COMPSCIX 415.2 Homework 6"
 author: "Bryan Hee"
 date: "March 12, 2018"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE, echo = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(mosaicData)
+data("Whickham")
+View(Whickham)
 ```
 
 # Exercise 1
+### Question 1
+The dataset Whickam included in the mosaicData library represents 1314 observations of a one-in-six survey of women in Whickham, UK in 1972-1974. The study focused on heart disease and thyroid disease and was followed up 20 years later with a second survey. The variables included are the outcome survival status after 20 years, smoker status during the first survey, and age at the time of the first survey.
+
+```{r}
+str(Whickham)
+```
+
+### Question 2
+There are 1314 observations in the dataset, and each represents a woman who lived in Whickham in 1972-1974.
+
+### Question 3
+The following comparison of the mortality rate between smokers and non-smokers shows a slight correlation between not smoking and dying. This obviously does not make very much sense, as we know that, all else being equal, smoking should increase the mortality rate in a population. This displays Simpson's Paradox. The other information displayed in the graph below is that the number of women alive is much larger than those who are deceased.
+
+```{r Question 1.3}
+Whickham %>% count(smoker, outcome) -> Ageless
+  colnames(Ageless)[3] <- "total"
+  mutate(Ageless, percent = total/sum(total)*100
+         ) -> Ageless
+Ageless
+  ggplot(Ageless) +
+  geom_bar(aes(x = smoker, y = total, fill = outcome), stat = "identity", position = "fill") +
+  labs(x = "Smoker?", y = "Percentage", title = "Mortality Comparison between Smokers and Non-Smokers")
+```
+
+### Question 4
+By faceting by age group, the graphs now display the opposite of the trend displayed in the graph above. The new trend shown is that smoking is positively correlated with mortality. This makes more sense given our understanding of the carcinogenic nature of tobacco products.  
+
+```{r}
+Whickham_fct <- Whickham
+Whickham_fct %>%
+mutate(age_group = factor(case_when(Whickham_fct$age <= 44 ~ '<= 44',
+                                    Whickham_fct$age > 44 & Whickham_fct$age <= 64~'44<Age<=64',
+                                    Whickham_fct$age > 64 ~ '>64'),
+                                    levels = c('<= 44', '44<Age<=64', '>64'), ordered = TRUE)) -> Whickham_fct
+
+Whickham_fct %>% count(smoker, outcome, age_group) -> with_age
+colnames(with_age)[4] <- "total"
+mutate(with_age, percent = total/sum(total)*100) -> with_age
+
+with_age %>% arrange(age_group) -> with_age
+with_age
+
+with_age %>%
+ggplot() +
+geom_bar(aes(x = smoker, y = total, fill = outcome), stat = "identity", position = "fill") +
+  facet_wrap(~age_group) +
+  labs(x = "Smoker?", y = "Percentage", title = "Mortality Comparison between Smokers and Non-Smokers based on Age")
+```
+
+```{r include = FALSE, echo= FALSE, fig.show="hide"}
+Whickham_fct_2 <- Whickham
+Whickham_fct_2 %>%
+mutate(age_group = factor(case_when(Whickham_fct_2$age <= 25 ~ '<= 25',
+                                    Whickham_fct_2$age > 25 & Whickham_fct$age <= 35~'25<Age<=35',
+                                    Whickham_fct_2$age > 35 & Whickham_fct$age <= 45~'35<Age<=45',
+                                    Whickham_fct_2$age > 45 & Whickham_fct$age <= 55~'45<Age<=55',
+                                    Whickham_fct_2$age > 55 & Whickham_fct$age <= 65~'55<Age<=65',
+                                    Whickham_fct_2$age > 65 & Whickham_fct$age <= 75~'65<Age<=75',
+                                    Whickham_fct_2$age > 75 ~ '>75'),
+                                    levels = c('<= 25', '25<Age<=35', '35<Age<=45', '45<Age<=55', '55<Age<=65', '65<Age<=75', '>75'), ordered = TRUE)) -> Whickham_fct_2
+
+Whickham_fct_2 %>% count(smoker, outcome, age_group) -> with_age_2
+colnames(with_age_2)[4] <- "total"
+mutate(with_age_2, percent = total/sum(total)*100) -> with_age_2
+
+with_age_2 %>% arrange(age_group) -> with_age_2
+with_age_2
+
+with_age_2 %>%
+ggplot() +
+geom_bar(aes(x = smoker, y = total, fill = outcome), stat = "identity", position = "fill") +
+  facet_wrap(~age_group) +
+  labs(x = "Smoker", y = "Percentage", title = "Mortality Comparison between Smokers and Non-Smokers based on Age")
+```
+
+
+
+#Exercise 2
+###Question 1
+
+```{r}
+n <- 10000
+gamma_samp <- tibble(x = rgamma(n, shape = 1, scale = 2))
+ggplot(gamma_samp, mapping = aes(x = x)) +
+geom_histogram(binwidth = 0.01)
+```
+
+###Question 2
+```{r}
+mean_samp <- gamma_samp %>% .[['x']] %>% mean()
+mean_samp
+
+variance_samp <- gamma_samp %>% .[['x']] %>% var()
+variance_samp
+```
+
+###Question 3
+
+```{r}
+n = 30
+gamma_samp_3 <- tibble(x = rgamma(n, shape = 1, scale = 2))
+ggplot(gamma_samp_3, mapping = aes(x = x)) +
+geom_histogram(binwidth = .15)
+
+mean_samp_3 <- gamma_samp_3 %>% .[['x']] %>% mean()
+mean_samp_3
+
+variance_samp_3 <- gamma_samp_3 %>% .[['x']] %>% var()
+variance_samp_3
+
+```
+
+###Question 4
+
+```{r}
+gamma_mean_samp_4 <- rep(NA, 10000)
+for(i in 1:10000) {
+  g_samp_4 <- rgamma(30, shape =1, scale = 2)
+  gamma_mean_samp_4[i] <- mean(g_samp_4)
+}
+gamma_mean_samp_4 <- tibble (gamma_mean_samp_4)
+colnames(gamma_mean_samp_4)[1] <- 'x'
+```
+
+###Question 5
+
+```{r}
+gamma_mean_samp_4 %>%
+ggplot(mapping = aes(x=x)) +
+  geom_histogram(binwidth = 0.03)
+```
+
+###Question 6
+```{r}
+mean_samp_4 <- gamma_mean_samp_4 %>% .[['x']] %>% mean()
+mean_samp_4
+
+variance_samp_4 <- gamma_mean_samp_4 %>% .[['x']] %>% var()
+variance_samp_4
+```
+
+###Question 7
+THe small variance of the data within the tibble of 10,000 means in the previous question was surprising to me. In the previous problems, it was much closer to 4. However, according to the Central Limit Theorem, the variance should be 0.365^2, or 0.133. The variance in the previous problem is very close to that.
+
+###Question 8
+The mean continues to be very close to 2. According to the Central Limit Theorem the standard deviation should be ~0.115 which yields a variance of ~0.013333. When taking a sample of 300, the variance in the following code confirms this theorem with a sample variance close to ~0.0133.
+
+
+```{r}
+gamma_mean_samp_5 <- rep(NA, 10000)
+for(i in 1:10000) {
+  g_samp_5 <- rgamma(300, shape =1, scale = 2)
+  gamma_mean_samp_5[i] <- mean(g_samp_5)
+}
+gamma_mean_samp_5 <- tibble (gamma_mean_samp_5)
+colnames(gamma_mean_samp_5)[1] <- 'x'
+
+gamma_mean_samp_5 %>%
+ggplot(mapping = aes(x=x)) +
+  geom_histogram(binwidth = 0.03)
+
+mean_samp_5 <- gamma_mean_samp_5 %>% .[['x']] %>% mean()
+mean_samp_5
+
+variance_samp_5 <- var(gamma_mean_samp_5$x)
+variance_samp_5
+```
 
