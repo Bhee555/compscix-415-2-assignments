@@ -1,0 +1,15 @@
+---
+title: "COMPSCIX 415.2 Homework 6"
+author: "Bryan Hee"
+date: "March 12, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE, echo = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(mosaicData)
+```
+
+# Exercise 1
+
