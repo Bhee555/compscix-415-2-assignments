@@ -182,5 +182,6 @@ mean_samp_5
 
 variance_samp_5 <- var(gamma_mean_samp_5$x)
 variance_samp_5
+#test
 ```
 
