@@ -1,0 +1,37 @@
+---
+title: "Class 4 Practice"
+author: "Bryan Hee"
+date: "February 20, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tidyr)
+library(dplyr)
+library(rvest)
+```
+
+```{r}
+data(flights)
+exa <- flights %>% filter(is.na(dep_delay) | is.na(arr_delay))
+flights %>%
+x <- summarise(count = n())
+```
+
+```{r}
+library(tidyverse)
+file_path <- 'C:/Users/BryanHee/Downloads/flights.csv'
+csv_data <- read_csv(file = file_path)
+```
+
+```{r}
+batman <- html("https://www.imdb.com/title/tt0372784/?ref_=nv_sr_3")
+class(batman)
+batman %>%
+  html_nodes("#titleCast .itemprop span") %>%
+  html_text()
+
+```
+

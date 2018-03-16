@@ -1,0 +1,19 @@
+---
+title: "class 6 work"
+author: "Bryan Hee"
+date: "March 6, 2018"
+output: html_document
+---
+
+```{r setup, echo=false, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(mdsr)
+library(tidyverse)
+```
+
+```{r}
+flights %>% sample_n(300) %>% 
+  summarize(mean_time = mean(air_time, na.rm = TRUE),
+                        sd_time = sd(air_time, na.rm = TRUE))
+```
+

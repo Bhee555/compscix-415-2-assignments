@@ -50,3 +50,22 @@ texas_housing %>%
     filtered_months = sum(sales > 500, na.rm = TRUE)) %>%
   arrange(desc(filtered_median))
 ```
+
+
+
+```{r}
+library(tidyverse)
+diamonds %>% ggplot(aes(x = carat)) + geom_histogram()
+  diamonds_2 <- diamonds %>% mutate(carat_fct = 
+                                      factor(case_when(carat < 1 ~ 'small',
+                                                       carat >= 1 & carat < 2 ~ 'med',
+                                                       carat >2 ~ 'large'),
+                                             levels = c('small', 'med', 'large')))
+  
+  #dash may be tilde
+  diamonds_2 %>% ggplot(aes(x=cut, y = price)) +
+    geom_boxplot() +
+      facet_wrap(~carat_fct)
+```
+
+

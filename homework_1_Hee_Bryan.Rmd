@@ -2,7 +2,9 @@
 title: "COMPSCIX 415.2 Homework 1"
 author: "Bryan Hee"
 date: "February 5, 2018"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
