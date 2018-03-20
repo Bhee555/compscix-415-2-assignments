@@ -1,0 +1,63 @@
+---
+title: "COMPSCIX 415.2 Homework 7"
+author: "Bryan Hee"
+date: "March 19, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE, echo =FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(broom)
+```
+
+###Exercise 1
+There are 81 columns or variables and 1,460 observations in the train data set from the kaggle competition, House Prices: Advanced Regression Techniques.
+
+```{r import data}
+train <- read_csv(file = "C:/Users/BryanHee/OneDrive - stok LLC/Intro to Data Science/HW Assignments/Assignment 7/train.csv")
+glimpse(train)
+```
+
+###Exercise 2
+The following code represents a random sample of the train dataset via a 70/30 split. 70% of the train dataset will be used as a training dataset. The remaining 30% will be used as the testing dataset.
+
+```{r train/test 70/30 dataset creation}
+set.seed(29283)
+
+train_set <- train %>% sample_frac(0.7)
+test_set <- train %>% filter(!(train$Id %in% train_set$Id))
+```
+
+###Exercise 3 - CHECK
+The following code provides a linear regression with only a y-intercept for the variable train_set$SalePrice. The mean Sale Price is $181,176. This is confirmed by the function broom::tidy. The R-squared value is derived from the glance() function which is 0.
+
+```{r simple linear regression model}
+mod_0 <- lm(formula = SalePrice ~ 1, data = train_set)
+
+mean(train_set$SalePrice)
+tidy(mod_0)
+glance(mod_0)
+```
+
+###Exercise 4
+It makes sense that the above ground living square footage of the building (GrLivArea) is positively correlated to the house price. The coefficient provides the price per square foot valuation of the linear model, $54.50/sf. The overall quality of the building material (OverallQual) also makes sense that it is positievely correlated. The higher the 1-10 rating, the more expensive the house (all else being equal). The coefficient is the price effect on the overall home sale price associated with increasing the material and finish rating by one. 
+
+I would interpret the Neighborhood coefficients in the following way: the sign describes whether or not the neighborhood is beneficial for the home price (i.e. whether it is a desirable neighborhood (+) or not (-), and the absolute value relates the weight factor of the desirability (i.e. the larger the positive number the more desirable the neighborhood).
+
+Using a cutoff p-value of 0.5, all of the features are significant. However, in my opinion Neighborhood feature is not a practically significant feature due to the small sample size of the train_set dataset. There are 6 neighborhoods with less than 15 home sales within the sample set. That is not enough to have this represent a meaningful feature. See the code below for the count per each neighborhood.
+
+The model is a relatively good fit for the training set given the high R-squared value of 0.787.
+
+```{r 3 feature linear regression model}
+mod_1 <- lm(SalePrice ~ GrLivArea + OverallQual + Neighborhood, data = train_set)
+tidy(mod_1)
+
+train_set %>%
+  group_by(Neighborhood) %>%
+summarise(count = n()) %>%
+  arrange(count)
+
+glance(mod_1)
+```
+
