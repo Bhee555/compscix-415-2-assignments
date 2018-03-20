@@ -49,7 +49,7 @@ Using a cutoff p-value of 0.5, all of the features are significant. However, in 
 
 The model is a relatively good fit for the training set given the high R-squared value of 0.787.
 
-```{r 3 feature linear regression model}
+```{r 3-feature linear regression model}
 mod_1 <- lm(SalePrice ~ GrLivArea + OverallQual + Neighborhood, data = train_set)
 tidy(mod_1)
 
@@ -60,4 +60,41 @@ summarise(count = n()) %>%
 
 glance(mod_1)
 ```
+
+###Exercise 5
+
+```{r applied model}
+test_predictions <- as.tibble(predict(mod_1, newdata = test_set))
+test_set1 <- mutate(test_set, PSalePrice = test_predictions$value)
+test_set1 <- test_set1[c("GrLivArea", "OverallQual", "Neighborhood", "SalePrice", "PSalePrice")]
+
+price_difference <- rep(NA, 438)
+for(i in 1:438){
+price_difference[i] <- ((test_set1$SalePrice[i] - test_set1$PSalePrice[i])^2)
+}
+price_difference <- as.tibble(price_difference)
+
+price_difference %>%
+  summarise(sqrt(mean(value))) -> rmse
+rmse
+```
+
+###Exercise 6
+
+###Exercise 7
+After running the following model several times, the biggest thing that stood out to me was the variability of the R-squared value. It ranged from 0.50 to 0.94. I added a value of y divided by x to get a rough "feel" for when the sampling provided outliers. It wasn't always true, but for the most part the larger the y/x max value was, the smaller the R-squared value. This makes sense to me because if there are a lot of data points with large y/x values, you would expect the R-squared value to higher than if there was only one or two high y/x outliers.
+
+```{r}
+sim1a <- tibble(
+  x=rep(1:10, each=3),
+  y=x * 1.5 + 6 + rt(length(x), df=2),
+  z=y/x
+)
+max(sim1a$z)
+mod_2 <- lm(formula = y ~ x, data = sim1a)
+glance(mod_2)
+tidy(mod_2)
+```
+
+
 
