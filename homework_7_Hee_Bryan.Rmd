@@ -14,7 +14,7 @@ library(broom)
 ###Exercise 1
 There are 81 columns or variables and 1,460 observations in the train data set from the kaggle competition, House Prices: Advanced Regression Techniques.
 
-```{r import data}
+```{r import data, results=FALSE, warning=FALSE, message=FALSE}
 train <- read_csv(file = "C:/Users/BryanHee/OneDrive - stok LLC/Intro to Data Science/HW Assignments/Assignment 7/train.csv")
 glimpse(train)
 ```
@@ -29,7 +29,7 @@ train_set <- train %>% sample_frac(0.7)
 test_set <- train %>% filter(!(train$Id %in% train_set$Id))
 ```
 
-###Exercise 3 - CHECK
+###Exercise 3
 The following code provides a linear regression with only a y-intercept for the variable train_set$SalePrice. The mean Sale Price is $181,176. This is confirmed by the function broom::tidy. The R-squared value is derived from the glance() function which is 0.
 
 ```{r simple linear regression model}
@@ -80,6 +80,26 @@ rmse
 ```
 
 ###Exercise 6
+
+```{r}
+mod_1.5 <- lm(SalePrice ~ LotArea + OverallQual + YearRemodAdd, data = train_set)
+tidy(mod_1.5)
+glance(mod_1.5)
+
+test_predictions_1.5 <- as.tibble(predict(mod_1.5, newdata = test_set))
+test_set1.5 <- mutate(test_set, PSalePrice = test_predictions_1.5$value)
+test_set1.5 <- test_set1.5[c("LotArea", "OverallQual", "YearRemodAdd", "SalePrice", "PSalePrice")]
+
+price_difference1.5 <- rep(NA, 438)
+for(i in 1:438){
+price_difference1.5[i] <- ((test_set1.5$SalePrice[i] - test_set1.5$PSalePrice[i])^2)
+}
+price_difference1.5 <- as.tibble(price_difference1.5)
+
+price_difference1.5 %>%
+  summarise(sqrt(mean(value))) -> rmse
+rmse
+```
 
 ###Exercise 7
 After running the following model several times, the biggest thing that stood out to me was the variability of the R-squared value. It ranged from 0.50 to 0.94. I added a value of y divided by x to get a rough "feel" for when the sampling provided outliers. It wasn't always true, but for the most part the larger the y/x max value was, the smaller the R-squared value. This makes sense to me because if there are a lot of data points with large y/x values, you would expect the R-squared value to higher than if there was only one or two high y/x outliers.
