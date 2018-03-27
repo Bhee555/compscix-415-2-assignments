@@ -1,0 +1,200 @@
+---
+title: "COMPSCIX 415.2 Homework 8"
+author: "Bryan Hee"
+date: "March 26, 2018"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ISLR)
+library(tidyverse)
+library(broom)
+library(rpart)
+library(partykit)
+library(ROCR)
+```
+
+
+###Exercise 1
+There are 891 observations or people and 12 variables/columns in the Titanic training dataset.
+
+```{r}
+Titanic_kaggle <- read.csv("C:/Users/BryanHee/OneDrive - stok LLC/Intro to Data Science/HW Assignments/Assignment 8/train.csv", sep = ",")
+Titanic_kaggle <- transform(Titanic_kaggle, Survived = as.factor(Survived))
+glimpse(Titanic_kaggle)
+
+Titanic_kaggle %>%
+  group_by(Survived) %>%
+  summarise(count = n())
+```
+
+###Exercise 2
+```{r train/test 70/30 dataset creation}
+set.seed(29283)
+
+Titanic_train <- Titanic_kaggle %>% sample_frac(0.7)
+Titanic_test <- Titanic_kaggle %>% filter(!(Titanic_kaggle$PassengerId %in% Titanic_train$PassengerId))
+```
+
+###Exercise 3
+Using a logistic regression model, Survived is predicted based off of the attributes Pclass, Sex and Fare.
+
+Based off of the broom function, tidy, we are able to see the estimates, std.error, statistics, and p.values of the model inputs. The estimate related to class tells us that as the Pclass value goes up by one (i.e. going from middle class to lower class), the odds of survival drops by ~0.88. The odds are related to the probability. The coefficient associated with sex is intepretted as: males' odds of survival is 2.8 less than women. The fare estimate predicts that as the fare goes up by $1, the odds of survival go up by ~0.002.
+
+Based off of a 0.5 p-value cutoff, all features are significant. Fare is extremely close to the cutoff though. 
+
+```{r}
+mod_1 <- glm(Survived ~ Pclass + Sex + Fare, data = Titanic_train, family = 'binomial')
+tidy(mod_1)
+```
+
+
+###Exercise 4
+One path a Titanic passenger might take down the tree:
+A female passenger with a class proxy number greater than or equal to 2.5, and a fare value less than $23.7 but greater than or equal to 15 dollars has a 75% probability of survival based off of the training dataset. 
+
+Something that surprises me about the results of the tree, was that the node with the second lowest probability of survival was lower class women who had paid a lot for their fare. Also, most lower class women who paid less than 7.90 dollars survived. However, most lower class women who paid a little more (>$7.90 but < 15 dollars) died. 
+
+```{r}
+tree_mod <- rpart(Survived ~ Pclass + Sex + Fare, data = Titanic_train)
+tree_mod
+plot(as.party(tree_mod))
+```
+
+###Exercise 5
+For the following code, i chose to use the train dataset to then inform the predictions on the test dataset. This code differed slightly from what was provided on the homework handout.
+
+```{r Exercise 5}
+mod_2 <- glm(Survived ~ Pclass + Sex + Fare, data = Titanic_train, family = 'binomial')
+tidy(mod_2)
+test_logit <- predict(mod_2, newdata = Titanic_test, type = 'response')
+
+tree_mod2 <- rpart(Survived ~ Pclass + Sex + Fare, data = Titanic_train)
+test_tree <- predict(tree_mod2, newdata = Titanic_test)[,2]
+```
+
+```{r Exercise 5a}
+pred_logit <- prediction(predictions = test_logit, labels = Titanic_test$Survived)
+pred_tree <- prediction(predictions = test_tree, labels = Titanic_test$Survived)
+
+perf_logit <- performance(pred_logit, measure = 'tpr', x.measure = 'fpr')
+perf_logit_tbl <- tibble(perf_logit@x.values[[1]], perf_logit@y.values[[1]])
+names(perf_logit_tbl) <- c('fpr', 'tpr')
+
+perf_tree <- performance(pred_tree, measure = 'tpr', x.measure = 'fpr')
+perf_tree_tbl <- tibble(perf_tree@x.values[[1]], perf_tree@y.values[[1]])
+names(perf_tree_tbl) <- c('fpr', 'tpr')
+
+plot_roc <- function(perf_tbl) {
+  p <- ggplot(data = perf_tbl, aes(x = fpr, y = tpr)) +
+  geom_line(color = 'blue') +
+  geom_abline(intercept = 0, slope = 1, lty = 3) +
+  labs(x = 'False positive rate', y = 'True positive rate') +
+  theme_bw()
+  return(p)
+}
+
+plot_roc(perf_logit_tbl)
+plot_roc(perf_tree_tbl)
+```
+
+Based off of the area under the curve, AUC, values both models seem to be performing decently well. Anything greater than 0.5 is better than a chance guess. The Logistic model is actually performing better than the classification tree, which was surprising to me. These models could probably be improved by swapping out a feature for fare.
+```{r Exercise 5b}
+auc_logit <- performance(prediction.obj = pred_logit, measure = "auc")
+auc_tree <- performance(prediction.obj = pred_tree, measure = "auc")
+
+# extract the AUC value
+auc_logit@y.values[[1]]
+auc_tree@y.values[[1]]
+```
+
+```{r Exercise 5c}
+Titanic_test %>%
+  mutate(pred_logit = test_logit,
+         pred_tree = test_tree) -> Titanic_test
+
+cutoff = 0.3
+Titanic_test %>%
+  mutate(logit = case_when(pred_logit >= cutoff ~ "yes",
+                   pred_logit < cutoff ~ "no"), 
+         tree =  case_when(pred_tree >= cutoff ~ "yes",
+                           pred_tree < cutoff ~ "no")) -> Titanic_test
+
+
+Titanic_test %>% count(logit, Survived) %>% spread(Survived, n)
+Titanic_test %>% count(tree, Survived) %>% spread(Survived, n)
+```
+
+###Exercise 6
+
+```{r}
+Titanic_train %>% 
+  filter(!is.na(Titanic_train$Age)) -> Titanic_train2
+Titanic_test %>%
+  filter(!is.na(Titanic_test$Age)) -> Titanic_test2
+
+
+logit_mod6 <- glm(Survived ~ Pclass + Sex + Age, data = Titanic_train2, family = 'binomial')
+tidy(logit_mod6)
+test_logit6 <- predict(logit_mod6, newdata = Titanic_test2, type = 'response')
+
+tree_mod6 <- rpart(Survived ~ Pclass + Sex + Age, data = Titanic_train2)
+tree_mod6
+plot(as.party(tree_mod6))
+test_tree6 <- predict(tree_mod6, newdata = Titanic_test2)[,2]
+
+
+
+pred_logit6 <- prediction(predictions = test_logit6, labels = Titanic_test2$Survived)
+pred_tree6 <- prediction(predictions = test_tree6, labels = Titanic_test2$Survived)
+
+perf_logit6 <- performance(pred_logit6, measure = 'tpr', x.measure = 'fpr')
+perf_logit6_tbl <- tibble(perf_logit6@x.values[[1]], perf_logit6@y.values[[1]])
+names(perf_logit6_tbl) <- c('fpr', 'tpr')
+
+perf_tree6 <- performance(pred_tree6, measure = 'tpr', x.measure = 'fpr')
+perf_tree6_tbl <- tibble(perf_tree6@x.values[[1]], perf_tree6@y.values[[1]])
+names(perf_tree6_tbl) <- c('fpr', 'tpr')
+
+plot_roc <- function(perf_tbl) {
+  p <- ggplot(data = perf_tbl, aes(x = fpr, y = tpr)) +
+  geom_line(color = 'blue') +
+  geom_abline(intercept = 0, slope = 1, lty = 3) +
+  labs(x = 'False positive rate', y = 'True positive rate') +
+  theme_bw()
+  return(p)
+}
+
+plot_roc(perf_logit6_tbl)
+plot_roc(perf_tree6_tbl)
+
+
+
+auc_logit6 <- performance(prediction.obj = pred_logit6, measure = "auc")
+auc_tree6 <- performance(prediction.obj = pred_tree6, measure = "auc")
+
+# extract the AUC value
+auc_logit6@y.values[[1]]
+auc_tree6@y.values[[1]]
+
+
+
+Titanic_test2 %>%
+  mutate(pred_logit6 = test_logit6,
+         pred_tree6 = test_tree6) -> Titanic_test2
+
+cutoff = 0.2
+Titanic_test2 %>%
+  mutate(logit6 = case_when(pred_logit6 >= cutoff ~ "yes",
+                   pred_logit6 < cutoff ~ "no"), 
+         tree6 =  case_when(pred_tree6 >= cutoff ~ "yes",
+                           pred_tree6 < cutoff ~ "no")) -> Titanic_test2
+
+
+Titanic_test2 %>% count(logit6, Survived) %>% spread(Survived, n)
+Titanic_test2 %>% count(tree6, Survived) %>% spread(Survived, n)
+```
+
