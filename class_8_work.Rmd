@@ -1,0 +1,160 @@
+---
+title: "Class 8 Work (was absent)"
+author: "Bryan Hee"
+date: "March 24, 2018"
+output: html_document
+---
+
+```{r setup, echo=FALSE, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ISLR)
+library(tidyverse)
+library(broom)
+library(rpart)
+data(Default)
+library(partykit)
+library(ROCR)
+```
+
+```{r}
+glimpse(Default)
+str(Default)
+
+Default %>%
+  ggplot(mapping = aes(x = default, y = balance)) +
+  geom_boxplot()
+
+Default %>%
+  group_by(default) %>%
+  summarise(count = n())
+
+```
+
+```{r}
+Default <- Default %>% mutate(default_num = case_when(
+  default == 'Yes' ~ 1,
+  default == 'No' ~ 0
+))
+lm_mod <- lm(default_num ~ balance, data = Default)
+tidy(lm_mod)
+```
+
+```{r}
+Default <- Default %>% mutate(preds = predict(lm_mod))
+Default %>% ggplot(aes(x = balance, y = default_num, color = default)) +
+  geom_point() +
+  geom_line(aes(y = preds)) +
+  labs(y = 'Probabilities') +
+  theme_bw()
+```
+
+```{r}
+logit_mod <- glm(default ~ balance, data = Default, 
+                 family = 'binomial')
+tidy(logit_mod)
+Default <- Default %>% mutate(logpreds = predict(logit_mod, newdata = Default, type = 'response'))
+Default %>% ggplot(aes(x = balance, y = default_num, color = default)) +
+  geom_point() +
+  geom_line(aes(y = logpreds)) +
+  labs(y = 'Probabilities') +
+  theme_bw()
+```
+
+```{r}
+sim_balance <- tibble(seq(min(Default$balance), max(Default$balance), length.out = 1000))
+names(sim_balance) <- 'balance'
+sim_balance <- sim_balance %>% mutate(preds = 
+                                        predict(logit_mod, type = 'response', newdata = sim_balance))
+sim_balance %>% ggplot(aes(x = balance, y = preds)) +
+  geom_line() +
+  geom_point(data = Default, aes(y = default_num, color = default)) +
+  labs(y = 'Probabilities') +
+  theme_bw()
+```
+
+```{r}
+logit_mod1 <- glm(default ~ balance + student, data = Default, 
+                 family = 'binomial')
+tidy(logit_mod1)
+Default <- Default %>% mutate(logpreds1 = predict(logit_mod1, newdata = Default, type = 'response'))
+Default %>% ggplot(aes(x = balance, y = default_num, color = default)) +
+  geom_point() +
+  geom_line(aes(y = logpreds)) +
+  labs(y = 'Probabilities') +
+  theme_bw()
+```
+
+```{r}
+data("Hitters")
+glimpse(Hitters)
+```
+
+```{r}
+Hitters %>% ggplot(aes(x = Salary)) + 
+  geom_histogram(bins = 50) +
+  theme_bw()
+```
+
+```{r}
+Hitters <- Hitters %>% mutate(log_salary = log(Salary)) %>% filter(!is.na(log_salary))
+Hitters %>% ggplot(aes(x = log_salary)) + 
+  geom_histogram() +
+  theme_bw()
+```
+
+```{r}
+Heart <- read_csv('C:/Users/BryanHee/OneDrive - stok LLC/Intro to Data Science/HW Assignments/Assignment 8/Heart.csv')
+glimpse(Heart)
+
+Heart %>%
+  group_by(AHD) %>%
+  summarise(count = n())
+
+tree_mod0 <- rpart(AHD ~ ., data = Heart)
+preds <- predict(tree_mod0, newdata = Heart)
+Heart <- Heart %>% mutate(preds_prob = preds[, 2]) %>% 
+  mutate(preds_cat = case_when(preds_prob < .5 ~ 'No',
+                               preds_prob >= .5 ~ 'Yes'))
+Heart %>% count(preds_cat)
+
+Heart %>% count(preds_cat, AHD) %>% spread(AHD, n)
+
+
+summary(tree_mod0)
+plot(tree_mod0)
+text(tree_mod0, use.n = TRUE)
+
+plot(as.party(tree_mod0))
+```
+
+```{r}
+Hitters <- Hitters %>% 
+  mutate(log_salary = log(Salary)) %>% 
+  filter(!is.na(log_salary))
+tree_mod_reg <- rpart(log_salary ~ Years + Hits, data = Hitters)
+preds_reg <- predict(tree_mod_reg, newdata = Hitters)
+head(preds_reg)
+Hitters <- Hitters %>%
+  mutate(preds_reg = preds_reg,
+         difference = preds_reg - log_salary)
+```
+
+```{r}
+Hitters$preds_reg <- preds_reg
+ggplot(data = Hitters, aes(x = preds_reg, y = log_salary)) +
+  geom_point() +
+  labs(x = 'Predicted log salary', y = 'Actual log salary') +
+  theme_bw()
+```
+
+```{r}
+pred_obj <- prediction(predictions = Heart$preds_prob, 
+                       labels = Heart$AHD)
+roc <- performance(prediction.obj = pred_obj,
+                   measure = 'tpr', x.measure = 'fpr')
+plot(roc)
+auc <- performance(prediction.obj = pred_obj,
+                   measure = 'auc')
+auc@y.values[[1]]
+```
+
