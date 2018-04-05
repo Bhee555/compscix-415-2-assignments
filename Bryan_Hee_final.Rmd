@@ -14,3 +14,75 @@ library(partykit)
 library(randomForest)
 ```
 
+##Bootstrapping
+
+###Question 1
+```{r Load Data}
+Titanic_R2 <- read.csv(file = "C:/Users/BryanHee/OneDrive - stok LLC/Intro to Data Science/HW Assignments/Assignment 9/train.csv")
+Titanic_R2[,sapply(Titanic_R2, is.character)] <- lapply(Titanic_R2[,sapply(Titanic_R2, is.character)], as.factor)
+
+Titanic_R2 <- mutate(Titanic_R2, Survived = factor(case_when(Titanic_R2$Survived == 1 ~ 'Survived', Titanic_R2$Survived == 0 ~ "Died"), levels = c('Survived', 'Died'), ordered = FALSE))
+Titanic_R2 %>%
+      glimpse()
+
+```
+
+###Question 2
+```{r bootstrap x 100}
+titanic_boot <- bootstrap(data = Titanic_R2, n = 100)
+is.tibble(titanic_boot)
+titanic_boot
+```
+
+```{r Verify list resample 100}
+titanic_boot$strap[[100]] %>%
+  as.tibble() %>%
+  glimpse()
+```
+
+
+###Question 3
+```{r}
+as.tibble(titanic_boot$strap[[20]]) %>% n_distinct()
+as.tibble(titanic_boot$strap[[40]]) %>% n_distinct()
+as.tibble(titanic_boot$strap[[100]]) %>% n_distinct()
+
+##double checking the above code is correct
+dummy <- c(20, 40, 100)
+double_check <- rep(NA, 3)
+
+for(i in 1:3) {
+  as.tibble(titanic_boot$strap[[dummy[i]]]) -> holder
+  length(unique(holder$PassengerId)) -> double_check[i]
+  rm(holder)
+}
+double_check
+```
+
+###Question 4
+```{r Age Central Limit Theorem}
+age_mean <- function()
+
+  age_means <- rep(NA, 100)
+  
+for(i in 1:100){
+  as.tibble(titanic_boot$strap[[i]]) -> holder
+  mean(holder$Age, na.rm = TRUE) -> age_means[i]
+  rm(holder)
+}
+age_means <- as.tibble(age_means)
+
+ggplot(data = age_means) +
+  geom_histogram(mapping = aes(x = value), binwidth = 0.2) +
+  labs(y = "count", x = "average age", title = "bootstrapped average age")
+
+```
+
+
+###Question 5
+
+
+###Question 6
+
+
+##Random Forest
