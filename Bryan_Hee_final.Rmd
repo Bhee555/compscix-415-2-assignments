@@ -1,0 +1,16 @@
+---
+title: "COMPSCIX 415.2 Homework 9/Final"
+author: "Bryan Hee"
+date: "April 4, 2018"
+output: html_document
+---
+
+```{r setup, echo=FALSE, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(modelr)
+library(rpart)
+library(partykit)
+library(randomForest)
+```
+

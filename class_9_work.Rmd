@@ -1,0 +1,74 @@
+---
+title: "Week 9 Classwork"
+author: "Bryan Hee"
+date: "March 27, 2018"
+output: html_document
+---
+
+```{r setup, echo=FALSE, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ISLR)
+library(tidyverse)
+library(broom)
+library(modelr)
+library(rpart)
+library(partykit)
+library(randomForest)
+library(ROCR)
+data("Auto")
+```
+
+```{r 5-k-fold Model with averaged Root-Mean Square}
+model_data <- Auto %>% crossv_kfold(k = 5)
+model_data
+all_rmse <- rep(NA, 5)
+
+for(i in 1:5) {
+  train_data <- model_data$train[[i]] %>% as.tibble()
+  test_data <- model_data$test[[i]] %>% as.tibble()
+  
+  model <- lm(mpg ~ horsepower, data = train_data)
+  preds <- predict(model, newdata= test_data)
+  all_rmse[i] <- sqrt(mean((test_data$mpg - preds)^2))
+}
+mean(all_rmse)
+```
+
+```{r}
+glimpse(Heart)
+```
+
+```{r}
+library(modelr)
+set.seed(9870)
+Heart_sets <- resample_partition(Heart, c(test = 0.3, train = 0.7))
+class(Heart_sets)
+```
+
+
+```{r}
+library(ROCR) # use ROCR
+one_tree <- rpart(AHD ~ ., data = Heart_sets$train) # fit tree
+preds <- predict(one_tree, Heart_sets$test)[,2] # get predictions
+actuals <- as.tibble(Heart_sets$test)$AHD # extract actuals
+pred_obj <- prediction(predictions = preds, 
+                       labels = actuals)
+one_tree_auc <- performance(pred_obj, measure = 'auc')@y.values[[1]]
+one_tree_auc
+```
+
+
+```{r Random Forest Example}
+Hearts_train <- as.tibble(Heart_sets$train)
+Hearts_test <- as.tibble(Heart_sets$test)
+# We have some missing values in our data, so we
+# deal with those using na.roughfix
+rf_mod <- randomForest(AHD ~ ., data = Hearts_train, 
+                       mtry = 3, ntrees = 100, 
+                       na.action=na.roughfix)
+
+#mtry - number of features to sample at each node
+#ntrees - number of trees
+#na.roughfix - treats each row of missing values by taking the median
+```
+
