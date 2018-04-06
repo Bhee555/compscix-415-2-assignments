@@ -72,3 +72,20 @@ rf_mod <- randomForest(AHD ~ ., data = Hearts_train,
 #na.roughfix - treats each row of missing values by taking the median
 ```
 
+```{r}
+library(nycflights13)
+sd(flights$air_time, na.rm = TRUE)/sqrt(300) -> y
+flights %>% sample_n(3000) -> test
+sd(mean(test$air_time, na.rm = TRUE), na.rm = TRUE) -> x
+
+
+meany <- rep(NA, 100)
+for(i in 1:100){
+flights %>% sample_n(300) %>% 
+  summarize(mean_time = mean(air_time, na.rm = TRUE)) -> test
+as.numeric(test$mean_time) -> meany[i]  
+}
+sd(meany)
+
+```
+
