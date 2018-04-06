@@ -23,27 +23,27 @@ library(ROCR)
 #Bootstrapping
 
 ###Question 1
+Loading the Titanic dataset and forcing all character columns to factors. Also forcing the Survived column to a factor: 
+
 ```{r Load Data}
 Titanic_R2 <- read.csv(file = "C:/Users/BryanHee/OneDrive - stok LLC/Intro to Data Science/HW Assignments/Assignment 9/train.csv")
 
 Titanic_R2[,sapply(Titanic_R2, is.character)] <- lapply(Titanic_R2[,sapply(Titanic_R2, is.character)], as.factor)
 
-Titanic_R2 <- transform(Titanic_R2, Survived = as.factor(Survived)) %>%
+Titanic_R2$Survived <- factor(Titanic_R2$Survived, ordered = FALSE)
+Titanic_R2 %>%
   glimpse()
-
-#Titanic_R2 <- mutate(Titanic_R2, Survived = factor(case_when(Titanic_R2$Survived == 1 ~ 'Survived', Titanic_R2$Survived == 0 ~ "Died"), levels = c('Survived', 'Died'), ordered = FALSE))
-#Titanic_R2 %>%
-#      glimpse()
-
 ```
 
 ###Question 2
+Creating a 100 dataset bootstrap:
 ```{r bootstrap x 100}
 titanic_boot <- modelr::bootstrap(data = Titanic_R2, n = 100)
 is.tibble(titanic_boot)
 titanic_boot
 ```
 
+Verifying that 100 sample sets were created:
 ```{r Verify list resample 100}
 titanic_boot$strap[[100]] %>%
   as.tibble() %>%
@@ -52,7 +52,8 @@ titanic_boot$strap[[100]] %>%
 
 
 ###Question 3
-```{r}
+Taking distinct count of rows in a sample bootstrap datasets and double checking via for loop that the code is accurate:
+```{r Distinct Bootstrap Entry Counts}
 as.tibble(titanic_boot$strap[[20]]) %>% n_distinct()
 as.tibble(titanic_boot$strap[[40]]) %>% n_distinct()
 as.tibble(titanic_boot$strap[[100]]) %>% n_distinct()
@@ -70,6 +71,7 @@ double_check
 ```
 
 ###Questions 4 & 5
+Plotting the bootstrapped average age:
 ```{r Age Central Limit Theorem}
 age_mean <- function(dataset) {
   data <- as.tibble(dataset) # convert input data set to a tibble
@@ -98,6 +100,7 @@ ggplot(all_means) +
   labs(y = "count", x = "average age", title = "bootstrapped average age")
 ```
 
+Recreating the histogram with different code:
 ```{r Alternative Way}
 ##Alternative way
 age_means <- rep(NA, 100)
@@ -114,17 +117,18 @@ ggplot(data = age_means) +
   labs(y = "count", x = "average age", title = "bootstrapped average age")
 ```
 
-###Question 6 - FINISH!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-\[SE = \frac{\sigma}{\sqrt{n}}\] where \(\sigma\) is the standard deviation of Age and \(n\) is the size of our sample.
-
+###Question 6
+The empirical standard error is 3x smaller than the thoeretical standard error.
 
 ```{r Standard Error}
-
+SE_theory <- sd(Titanic_R2$Age, na.rm = TRUE)/sqrt(as.numeric(count(all_means)))
+SE_theory
+SE_empire <- sd(all_means$all_means, na.rm = TRUE)
+SE_empire
 ```
 
-
 #Random Forest
-
+Creating a test and training set of the Titanic dataset:
 ###Question 1
 ```{r Data Split}
 set.seed(987)
@@ -134,8 +138,8 @@ train_set <- as.tibble(model_data$train)
 test_set <- as.tibble(model_data$test)
 ```
 
-###Question 2 - UPDATE ANSWER!!!!!!!!!!!!!!!
-Compared to last week's 3-feature tree, this tree seems to fragment more (i.e. the tree isn't simply going from one branch to a smaller one in a linear fashion, but instead truly bisecting the data with each split then continuing to split again (it's a more balanced looking tree)). Also each split point is a unique feature.
+###Question 2
+Compared to last week's 3-feature tree, this tree has additional nodes and male are split by age. However, for the most part it looks fairl similar. See below for the resultant tree model:
 
 ```{r Decision Tree}
 tree_2 <- rpart(Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked, data = train_set)
@@ -144,6 +148,7 @@ plot(as.party(tree_2))
 ```
 
 ###Question 3
+Create a random forest model of the same data:
 ```{r Random Forest}
 rf_mod <- randomForest(Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked, 
                          data = train_set, 
@@ -172,53 +177,42 @@ auc_tree@y.values[[1]]
 ```
 
 
-###Question 5 - ADD LEGEND!!!!!!!!!!
-```{r}
+###Question 5
+Plotting both ROC curves in the same graph:
+```{r ROC Plot, warning=FALSE}
 # get the FPR and TPR for the random forest model
 perf_rf <- performance(pred_rf, measure = 'tpr', x.measure = 'fpr')
 perf_rf_tbl <- tibble(perf_rf@x.values[[1]], perf_rf@y.values[[1]])
 
+perf_rf_tbl[3] <- factor("random forest", ordered = FALSE)
 # Change the names of the columns of the tibble
-names(perf_rf_tbl) <- c('fpr', 'tpr')
+names(perf_rf_tbl) <- c('fpr', 'tpr', 'model')
 
 # get the FPR and TPR for the simple tree model
 perf_tree <- performance(pred_tree, measure = 'tpr', x.measure = 'fpr')
 perf_tree_tbl <- tibble(perf_tree@x.values[[1]], perf_tree@y.values[[1]])
 
+perf_tree_tbl[3] <- factor("tree", ordered = FALSE)
 # Change the names of the columns of the tibble
-names(perf_tree_tbl) <- c('fpr', 'tpr')
+names(perf_tree_tbl) <- c('fpr', 'tpr', 'model')
 
 #Combine results into one tibble
-
-perf_tree_tbl
-
 rf_vs_tree <- bind_rows(perf_rf_tbl, perf_tree_tbl)
+rf_vs_tree <- transform(rf_vs_tree, model = as.factor(model))
 
 # Plotting function for plotting a nice ROC curve using ggplot
 plot_roc <- function(perf_tbl) {
-  p <- ggplot(data = perf_tbl, aes(x = fpr, y = tpr)) +
-  geom_line(color = 'blue') +
+  p <- ggplot(data = perf_tbl, aes(x = fpr, y = tpr, color = model)) +
+  geom_line() +
   geom_abline(intercept = 0, slope = 1, lty = 3) +
   labs(x = 'False positive rate', y = 'True positive rate') +
   theme_bw()
   return(p)
 }
-
 plot_roc(rf_vs_tree)
-plot_roc(perf_rf_tbl)
-
-
-ggplot() +
-  geom_line(data = perf_tree_tbl, aes(x = fpr, y = tpr), color = 'red') +
-  geom_line(data = perf_rf_tbl, aes(x = fpr, y = tpr), color = 'blue') +
-  geom_abline(intercept = 0, slope = 1, lty = 3) +
-  labs(x = 'False positive rate', y = 'True positive rate') +
-  theme_bw()
-
-
 ```
 
-###Question 6 - FINISH!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-Based on the ROC curves, the BLANK model performs better. This is because BLANK. 
+###Question 6
+Based on the ROC curves, the random forest model performs better. This is because the AUC of the random forest performance (red) is greater than the simple tree model (blue/green). 
 
 If we attain a true positive rate of ~0.75, the approximate false positive rate for the random forest model is  0.155, whereas the false positive rate for the simple tree model is  0.34.
